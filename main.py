@@ -6,7 +6,7 @@ from database import engine, Base, get_db
 from sqlalchemy.orm import Session
 import models, schemas, auth
 
-# ── Lifespan (DB Init) ─────────────────────────
+# ── DB Init ─────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
@@ -18,21 +18,24 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# ── ✅ CORS FIX (IMPORTANT) ─────────────────────
+# ── CORS FIX (PRODUCTION SAFE) ───────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # ✅ allows all Vercel deployments
+    allow_origins=[
+        "http://localhost:3000",
+        "https://vercel.com/ananyacs2703-4453s-projects/opti-frontend-o12t"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ── Root (health check) ─────────────────────────
+# ── HEALTH CHECK ─────────────────────
 @app.get("/")
 def root():
-    return {"message": "VaultGuard API is running 🚀"}
+    return {"message": "VaultGuard API running 🚀"}
 
-# ── Auth ───────────────────────────────────────
+# ── AUTH ─────────────────────────────
 @app.post("/auth/login", response_model=schemas.TokenResponse)
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -58,7 +61,7 @@ def login(
 def get_me(current_user=Depends(auth.get_current_user)):
     return current_user
 
-# ── Users ──────────────────────────────────────
+# ── USERS ────────────────────────────
 @app.get("/users", response_model=list[schemas.UserOut])
 def list_users(
     db: Session = Depends(get_db),
@@ -88,7 +91,7 @@ def delete_user(
     db.delete(user)
     db.commit()
 
-# ── Assets ─────────────────────────────────────
+# ── ASSETS ───────────────────────────
 @app.get("/assets", response_model=list[schemas.AssetOut])
 def list_assets(
     db: Session = Depends(get_db),
