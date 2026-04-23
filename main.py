@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
+
 
 from database import engine, Base, get_db
 import models, schemas, auth
@@ -26,16 +28,12 @@ app = FastAPI(
 # ─────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:5173",
-        # ✅ IMPORTANT: replace with YOUR actual Vercel domain
-        "https://opti-frontend-o12t-qy5f55bcc-ananyacs2703-4453s-projects.vercel.app"
-    ],
+    allow_origins=["https://opti-frontend-o12t-qy5f55bcc-ananyacs2703-4453s-projects.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # ─────────────────────────────────────────────
 # HEALTH CHECK
