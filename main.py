@@ -26,15 +26,17 @@ app = FastAPI(
 # ─────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:5173",
-        # ✅ IMPORTANT: replace with YOUR actual Vercel domain
-        "https://opti-frontend-o12t-qy5f55bcc-ananyacs2703-4453s-projects.vercel.app"
-    ],
+    allow_origins=origins,
+    allow_origin_regex=r"https://opti-frontend.*\.vercel\.app",
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=[
+        "Authorization", "Content-Type", "Accept", "Origin",
+        "X-Requested-With", "Access-Control-Request-Method",
+        "Access-Control-Request-Headers",
+    ],
+    expose_headers=["Authorization"],
+    max_age=3600,
 )
 
 # ─────────────────────────────────────────────
