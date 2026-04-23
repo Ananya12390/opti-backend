@@ -26,8 +26,9 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",  # local
-        "https://opti-frontend-23zw-c733vcu77-ananyacs2703-4453s-projects.vercel.app"  # deployed frontend
+        "http://localhost:3000",
+        "https://opti-frontend-23zw.vercel.app",
+        "https://opti-frontend-23zw-ddrcroh9s-ananyacs2703-4453s-projects.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
