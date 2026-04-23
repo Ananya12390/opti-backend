@@ -2,11 +2,14 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from contextlib import asynccontextmanager
-from database import engine, Base, get_db
 from sqlalchemy.orm import Session
+
+from database import engine, Base, get_db
 import models, schemas, auth
 
-# ── DB Init ─────────────────────────
+# ─────────────────────────────────────────────
+# DB INIT
+# ─────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
@@ -18,24 +21,32 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# ── CORS FIX (PRODUCTION SAFE) ───────
+# ─────────────────────────────────────────────
+# CORS (PRODUCTION FIXED)
+# ─────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://vercel.com/ananyacs2703-4453s-projects/opti-frontend-o12t"
+        "http://localhost:5173",
+        # ✅ IMPORTANT: replace with YOUR actual Vercel domain
+        "https://opti-frontend-o12t-qy5f55bcc-ananyacs2703-4453s-projects.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ── HEALTH CHECK ─────────────────────
+# ─────────────────────────────────────────────
+# HEALTH CHECK
+# ─────────────────────────────────────────────
 @app.get("/")
 def root():
     return {"message": "VaultGuard API running 🚀"}
 
-# ── AUTH ─────────────────────────────
+# ─────────────────────────────────────────────
+# AUTH
+# ─────────────────────────────────────────────
 @app.post("/auth/login", response_model=schemas.TokenResponse)
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -61,7 +72,9 @@ def login(
 def get_me(current_user=Depends(auth.get_current_user)):
     return current_user
 
-# ── USERS ────────────────────────────
+# ─────────────────────────────────────────────
+# USERS
+# ─────────────────────────────────────────────
 @app.get("/users", response_model=list[schemas.UserOut])
 def list_users(
     db: Session = Depends(get_db),
@@ -91,7 +104,9 @@ def delete_user(
     db.delete(user)
     db.commit()
 
-# ── ASSETS ───────────────────────────
+# ─────────────────────────────────────────────
+# ASSETS
+# ─────────────────────────────────────────────
 @app.get("/assets", response_model=list[schemas.AssetOut])
 def list_assets(
     db: Session = Depends(get_db),
