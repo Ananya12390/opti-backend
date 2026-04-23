@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -26,9 +27,11 @@ app = FastAPI(
 # ─────────────────────────────────────────────
 # CORS (PRODUCTION FIXED)
 # ─────────────────────────────────────────────
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://opti-frontend-o12t-qy5f55bcc-ananyacs2703-4453s-projects.vercel.app"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
