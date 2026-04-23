@@ -63,14 +63,14 @@ def login(
         "user": schemas.UserOut.from_orm(user)
     }
 
-@app.get("/auth/me", response_model=schemas.UserOut)
+@app.post("/auth/me", response_model=schemas.UserOut)
 def get_me(current_user=Depends(auth.get_current_user)):
     return current_user
 
 # ─────────────────────────────────────────────
 # USERS
 # ─────────────────────────────────────────────
-@app.get("/users", response_model=list[schemas.UserOut])
+@app.post("/users", response_model=list[schemas.UserOut])
 def list_users(
     db: Session = Depends(get_db),
     _=Depends(auth.RequirePrivilege("view:all_users"))
