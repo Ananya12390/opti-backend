@@ -1,7 +1,9 @@
 from sqlalchemy.orm import Session
 import models
 from auth import hash_password
+from datetime import date
 
+# ── Permissions ───────────────────────
 ADMIN_PERMISSIONS = [
     "view:all_users",
     "manage:users",
@@ -23,12 +25,13 @@ EMPLOYEE_PERMISSIONS = [
     "view:my_gear",
 ]
 
+# ── Seed Function ─────────────────────
 def seed_database(db: Session):
-    # ✅ FIX: Check USERS instead of roles
-    if db.query(models.User).count() > 0:
-        return  # already seeded
+    # ✅ FIX 1: Prevent duplicate seeding
+    if db.query(models.User).first():
+        return
 
-    # ── Roles ─────────────────────────────
+    # ── Roles ─────────────────────────
     admin_role = models.Role(
         name="Admin",
         description="Full system access",
@@ -46,25 +49,28 @@ def seed_database(db: Session):
     )
 
     db.add_all([admin_role, manager_role, employee_role])
-    db.flush()  # get IDs
+    db.commit()   # ✅ FIX 2: Commit to generate IDs
+    db.refresh(admin_role)
+    db.refresh(manager_role)
+    db.refresh(employee_role)
 
-    # ── Users ─────────────────────────────
+    # ── Users ─────────────────────────
     users = [
         models.User(
-            name="Ananya",
+            name="Admin User",
             email="admin@vaultguard.io",
             username="admin",
             hashed_password=hash_password("admin123"),
             role_id=admin_role.id,
-            avatar_url="https://api.dicebear.com/7.x/avataaars/svg?seed=Aalishan"
+            avatar_url="https://api.dicebear.com/7.x/avataaars/svg?seed=admin"
         ),
         models.User(
-            name="Sarah",
+            name="Manager User",
             email="manager@vaultguard.io",
             username="manager",
             hashed_password=hash_password("manager123"),
             role_id=manager_role.id,
-            avatar_url="https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah"
+            avatar_url="https://api.dicebear.com/7.x/avataaars/svg?seed=manager"
         ),
         models.User(
             name="Ben",
@@ -72,34 +78,18 @@ def seed_database(db: Session):
             username="ben",
             hashed_password=hash_password("ben123"),
             role_id=employee_role.id,
-            avatar_url="https://api.dicebear.com/7.x/avataaars/svg?seed=Ben"
-        ),
-        models.User(
-            name="Priya",
-            email="priya@vaultguard.io",
-            username="priya",
-            hashed_password=hash_password("priya123"),
-            role_id=employee_role.id,
-            avatar_url="https://api.dicebear.com/7.x/avataaars/svg?seed=Priya"
-        ),
-        models.User(
-            name="James",
-            email="james@vaultguard.io",
-            username="james",
-            hashed_password=hash_password("james123"),
-            role_id=employee_role.id,
-            avatar_url="https://api.dicebear.com/7.x/avataaars/svg?seed=James"
+            avatar_url="https://api.dicebear.com/7.x/avataaars/svg?seed=ben"
         ),
     ]
 
     db.add_all(users)
-    db.flush()
+    db.commit()   # ✅ FIX 3: Save users before using IDs
+    for user in users:
+        db.refresh(user)
 
     ben = users[2]
-    priya = users[3]
-    james = users[4]
 
-    # ── Assets ─────────────────────────────
+    # ── Assets ─────────────────────────
     assets = [
         models.Asset(
             name="MacBook Pro 16\"",
@@ -108,25 +98,7 @@ def seed_database(db: Session):
             status="assigned",
             condition="new",
             assigned_to=ben.id,
-            purchase_date="2024-01-15"
-        ),
-        models.Asset(
-            name="MacBook Air M2",
-            category="Laptop",
-            serial_number="MBA-2023-002",
-            status="assigned",
-            condition="good",
-            assigned_to=priya.id,
-            purchase_date="2023-09-10"
-        ),
-        models.Asset(
-            name="Dell XPS 15",
-            category="Laptop",
-            serial_number="DEL-2023-003",
-            status="assigned",
-            condition="good",
-            assigned_to=james.id,
-            purchase_date="2023-06-20"
+            purchase_date=date(2024, 1, 15)   # ✅ FIX 4: Use proper date
         ),
         models.Asset(
             name="iPhone 15 Pro",
@@ -135,15 +107,7 @@ def seed_database(db: Session):
             status="assigned",
             condition="new",
             assigned_to=ben.id,
-            purchase_date="2024-02-01"
-        ),
-        models.Asset(
-            name="Samsung Galaxy S24",
-            category="Phone",
-            serial_number="SAM-2024-002",
-            status="available",
-            condition="new",
-            purchase_date="2024-03-01"
+            purchase_date=date(2024, 2, 1)
         ),
     ]
 
